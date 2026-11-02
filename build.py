@@ -45,6 +45,23 @@ EVENTS = [
    talks=["Having the conversation with your parent","Paying for care: Medicare, Medicaid and long-term care","When home isn't safe anymore"],
    prices=[("Standard table","$1,300","")]),
 ]
+CODES = {"summer":"SOF27","specialneeds":"SNR27","fall":"FAF27","preschool":"FSP27","aging":"CAP27"}
+GUIDES = {
+ "summer": ("Westchester Summer Camp Guide", "Day and sleepaway camps side by side: ages, hours, cost ranges, transportation and sign-up deadlines."),
+ "specialneeds": ("Special Needs Resource Guide", "Schools, therapists, evaluators and advocates in and near Westchester, plus a plain-English IEP and 504 primer."),
+ "fall": ("Fall Activities Guide", "After-school classes, leagues, lessons and tutoring by town, age and day of the week."),
+ "preschool": ("Preschool & Pre-K Guide", "Preschools and daycares compared on hours, philosophy and tuition range, with district pre-K timelines."),
+ "aging": ("Caring for Aging Parents Guide", "Home care, senior living, elder law and Medicaid basics, with a checklist for the first family conversation."),
+}
+GUIDE_PRICE = "$15"
+BUNDLE_PRICE = "$49"
+TERMS = [
+ "Your table is confirmed once payment clears. You'll get a receipt and confirmation by email.",
+ "Paying by bank transfer (ACH) at checkout is preferred. It keeps table prices low.",
+ "Full refund until 30 days before the fair. After that, tables can move to another fair but aren't refunded.",
+ "If the fair is canceled for weather, your table moves to the snow date or you get a full refund.",
+]
+for _x in EVENTS: _x["code"] = CODES[_x["key"]]
 MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 e = html.escape
 
@@ -72,17 +89,17 @@ def tail(full=True):
     return s + ("\n</body>\n</html>\n" if full else "\n")
 
 def nav(active=""):
-    links = "".join(f'<a href="{x}.html"{" aria-current=\"page\"" if active==x else ""}>{t}</a>' for x,t in [("index","Fairs"),("exhibit","Exhibit")])
+    links = "".join(f'<a href="{x}.html"{" aria-current=\"page\"" if active==x else ""}>{t}</a>' for x,t in [("index","Fairs"),("families","Families"),("guides","Guides"),("exhibit","Exhibit")])
     return f'''<header class="top"><div class="wrap top-in">
 <a class="brand" href="index.html"><span class="mark" aria-hidden="true"></span>Resource Commons</a>
-<nav class="nav">{links}<a class="btn small" data-link="signup" href="#">Get updates</a></nav>
+<nav class="nav">{links}<a class="btn small" href="families.html#signup">Get updates</a></nav>
 </div></header>'''
 
 def footer():
     return f'''<footer class="foot"><div class="wrap foot-in">
 <div><a class="brand" href="index.html"><span class="mark" aria-hidden="true"></span>Resource Commons</a>
 <p>Family resource fairs in Westchester, New York. Free for families.</p></div>
-<div class="foot-links">{"".join(f'<a href="{x["slug"]}.html">{e(x["name"])}</a>' for x in EVENTS)}<a href="exhibit.html">Exhibit or sponsor</a></div>
+<div class="foot-links">{"".join(f'<a href="{x["slug"]}.html">{e(x["name"])}</a>' for x in EVENTS)}<a href="exhibit.html">Exhibit or sponsor</a><a href="guides.html">Resource guides</a></div>
 </div></footer>'''
 
 def yearstrip(current=None):
@@ -133,7 +150,7 @@ def home(full=True):
 </div></section>
 <section class="band"><div class="wrap"><div class="split">
 <div><h2>Hear about each fair first.</h2><p>One email before each fair with the date, venue, exhibitor list and talk schedule.</p></div>
-<div class="cta"><a class="btn" data-link="signup" href="#">Join the email list</a></div>
+<div class="cta"><a class="btn" href="families.html#signup">Join the email list</a></div>
 </div></div></section>
 </main>
 {footer()}'''
@@ -152,7 +169,7 @@ def event_page(x):
 <h1>{e(x["name"])}</h1>
 <p class="lede">{e(x["tagline"])}</p>
 <dl class="facts"><div><dt>When</dt><dd>{e(x["when"])}</dd></div><div><dt>Where</dt><dd>{e(x["where"])}. Venue announced soon.</dd></div><div><dt>Families</dt><dd>Free, RSVP requested</dd></div></dl>
-<div class="cta"><a class="btn" data-link="rsvp-{x["key"]}" href="#">RSVP free</a><a class="btn ghost" data-link="exhibit-{x["key"]}" href="#">Reserve a table</a></div>
+<div class="cta"><a class="btn" href="families.html#signup">RSVP free</a><a class="btn ghost" href="exhibit-{x["slug"]}.html">Reserve a table</a></div>
 </div></div></section>
 <section class="band"><div class="wrap">
 <div class="sec-h"><h2>Who it's for</h2><p>{e(x["audience"])}</p></div>
@@ -165,7 +182,7 @@ def event_page(x):
 <section class="band"><div class="wrap">
 <div class="sec-h"><h2>For exhibitors</h2><p>Tables include a 6-foot table, two chairs, a listing in the event guide and the post-fair family survey results.</p></div>
 <div class="tbl"><table><thead><tr><th>Option</th><th class="num">Price</th><th>Notes</th></tr></thead><tbody>{prices}</tbody></table></div>
-<div class="cta"><a class="btn" data-link="exhibit-{x["key"]}" href="#">Reserve a table</a><a class="btn ghost" href="exhibit.html">Bundles and sponsorship</a></div>
+<div class="cta"><a class="btn" href="exhibit-{x["slug"]}.html">Reserve a table</a><a class="btn ghost" href="exhibit.html">Bundles and sponsorship</a></div>
 </div></section>
 <section class="band"><div class="wrap">
 <div class="sec-h"><h2>Questions</h2></div>
@@ -180,7 +197,7 @@ def event_page(x):
     return head(f'{x["name"]} · {SITE}', x["tagline"]) + "\n" + body + "\n" + tail()
 
 def exhibit():
-    rows = "".join(f'<tr><td><a href="{x["slug"]}.html">{e(x["name"])}</a></td><td>{x["month"]}</td><td class="num">{e(x["prices"][0][1])}</td></tr>' for x in EVENTS)
+    rows = "".join(f'<tr><td><a href="{x["slug"]}.html">{e(x["name"])}</a></td><td>{x["month"]}</td><td class="num">{e(x["prices"][0][1])}</td><td><a href="exhibit-{x["slug"]}.html">Reserve</a></td></tr>' for x in EVENTS)
     body = f'''{nav("exhibit")}
 <main>
 <section class="hero"><div class="wrap">
@@ -191,7 +208,7 @@ def exhibit():
 </div></section>
 <section class="band"><div class="wrap">
 <div class="sec-h"><h2>Table pricing by fair</h2><p>Starting prices. Each fair page lists every option.</p></div>
-<div class="tbl"><table><thead><tr><th>Fair</th><th>Month</th><th class="num">Tables from</th></tr></thead><tbody>{rows}</tbody></table></div>
+<div class="tbl"><table><thead><tr><th>Fair</th><th>Month</th><th class="num">Tables from</th><th></th></tr></thead><tbody>{rows}</tbody></table></div>
 </div></section>
 <section class="band"><div class="wrap three">
 <div><h3>Multi-fair bundles</h3><p>Exhibit at three or more fairs in a season and save on every table.</p></div>
@@ -206,39 +223,199 @@ def exhibit():
 {footer()}'''
     return head(f"Exhibit · {SITE}", "Exhibit or sponsor at Resource Commons family resource fairs in Westchester, NY.") + "\n" + body + "\n" + tail()
 
-CONFIG = '''// Paste your form and payment links here. Any link left blank shows as "Opening soon".
-// Good free options: Tally or Google Forms for RSVPs and exhibitor applications,
-// Stripe Payment Links for table payments, Mailchimp or Buttondown for the email list.
-window.RC_LINKS = {
-  signup: "",              // email list sign-up page
-  exhibit: "",             // general exhibitor application
-  "rsvp-summer": "",       "exhibit-summer": "",
-  "rsvp-specialneeds": "", "exhibit-specialneeds": "",
-  "rsvp-fall": "",         "exhibit-fall": "",
-  "rsvp-preschool": "",    "exhibit-preschool": "",
-  "rsvp-aging": "",        "exhibit-aging": ""
+
+def vendor_page(x):
+    opts = []
+    for i,(a,b,c) in enumerate(x["prices"]):
+        paid = b.startswith("$")
+        btn = (f'<a class="btn" data-link="pay-{x["code"]}-{i+1}" href="#">Pay {e(b)}</a>' if paid
+               else '<a class="btn ghost" data-link="exhibit" href="#">Apply</a>')
+        opts.append(f'<div class="opt"><div class="opt-h"><h3>{e(a)}</h3><span class="opt-p">{e(b)}</span></div>'
+                    f'<p>{e(c) if c else "Includes a 6-foot table, two chairs and a listing in the event guide."}</p>{btn}</div>')
+    terms = "".join(f"<li>{e(t)}</li>" for t in TERMS)
+    body = f"""{nav()}
+<main class="event {x["hue"]}">
+<section class="ev-hero"><div class="wrap"><div class="panel slim">
+<a class="back" href="{x["slug"]}.html">← {e(x["name"])}</a>
+<p class="eyebrow">Exhibitor checkout · {x["code"]}</p>
+<h1>Reserve your table</h1>
+<p class="lede">{e(x["name"])} · {e(x["when"])} · {e(x["where"])}</p>
+</div></div></section>
+<section class="band"><div class="wrap">
+<div class="opts">{"".join(opts)}</div>
+<div class="ach"><span class="ic" aria-hidden="true">ACH</span><div><h3>Pay by bank if you can</h3><p>Checkout offers card or bank transfer. Bank transfer takes a few days to clear but keeps fees, and table prices, low.</p></div></div>
+</div></section>
+<section class="band"><div class="wrap two">
+<div><h2>Payment terms</h2><ul class="talks">{terms}</ul></div>
+<div><h2>Need an invoice?</h2><p class="small-note">Schools, districts and nonprofits can request an invoice and pay by check or ACH. Sponsors are always invoiced.</p><a class="btn ghost" data-link="exhibit" href="#">Request an invoice</a></div>
+</div></section>
+</main>
+{footer()}"""
+    return head(f'Reserve a table · {x["name"]}', f'Exhibitor checkout for the {x["name"]}.') + "\n" + body + "\n" + tail()
+
+def families():
+    boxes = "".join(f'<label class="chk {x["hue"]}"><input type="checkbox" name="interest" value="{x["code"]}" id="i-{x["key"]}"><span>{e(x["name"])}</span></label>' for x in EVENTS)
+    cards = "".join(f'<a class="mini {x["hue"]}" href="{x["slug"]}.html"><span class="mini-m">{x["month"]}</span><span>{e(x["name"])}</span></a>' for x in EVENTS)
+    body = f"""{nav("families")}
+<main>
+<section class="hero"><div class="wrap">
+<p class="eyebrow"><span class="live" aria-hidden="true"></span>For Westchester families · Always free</p>
+<h1>Big family decisions, <span class="hl">less guesswork.</span></h1>
+<p class="lede">Camps, preschools, therapists, after-school programs, care for a parent. Resource Commons puts the local options in one room, and in your inbox before you need them.</p>
+<div class="cta"><a class="btn" href="#signup">Get fair updates</a><a class="btn ghost" href="guides.html">Browse the guides</a></div>
+</div></section>
+<section class="band" id="signup"><div class="wrap">
+<div class="signup-card">
+<div class="sec-h"><h2>Tell us what you're planning for.</h2><p>We'll email you before the fairs you pick, with the date, venue, exhibitor list and talk schedule. Nothing else.</p></div>
+<form id="kit-form" class="kit" novalidate>
+<fieldset><legend>I'm interested in</legend><div class="chks">{boxes}</div></fieldset>
+<div class="row"><label class="fld"><span>First name</span><input id="f-name" name="first_name" autocomplete="given-name"></label>
+<label class="fld"><span>Email</span><input id="f-email" name="email_address" type="email" autocomplete="email" required></label></div>
+<div class="row end"><button class="btn" type="submit" id="f-submit">Sign me up</button><p class="small-note" id="f-msg" role="status">We never sell or share your email.</p></div>
+</form>
+</div>
+</div></section>
+<section class="band"><div class="wrap">
+<div class="sec-h"><h2>This year's fairs</h2></div>
+<div class="minis">{cards}</div>
+</div></section>
+<section class="band"><div class="wrap">
+<div class="promo"><div><h2>Can't make a fair?</h2><p>Each fair has a downloadable guide that compares the local options side by side. {GUIDE_PRICE} each, or all five for {BUNDLE_PRICE}.</p></div>
+<div class="cta"><a class="btn light" href="guides.html">See the guides</a></div></div>
+</div></section>
+</main>
+{footer()}"""
+    return head(f"For families · {SITE}", "Free Westchester family resource fairs and email updates for camps, preschools, special needs resources, activities and aging parents.") + "\n" + body + "\n" + tail()
+
+def guides():
+    cards = "".join(f"""<div class="guide {x["hue"]}"><div class="cover"><span class="cover-k">Resource Commons</span><span class="cover-n">{e(GUIDES[x["key"]][0])}</span><span class="cover-y">2027 edition · PDF</span></div>
+<div class="guide-b"><p>{e(GUIDES[x["key"]][1])}</p><p class="small-note">Released before the {e(x["name"])}.</p>
+<div class="guide-f"><span class="opt-p">{GUIDE_PRICE}</span><a class="btn" data-link="guide-{x["code"]}" href="#">Buy guide</a></div></div></div>""" for x in EVENTS)
+    body = f"""{nav("guides")}
+<main>
+<section class="hero"><div class="wrap">
+<p class="eyebrow">Resource guides · PDF download</p>
+<h1>The local options, <span class="hl">side by side.</span></h1>
+<p class="lede">Each guide is built from the fair's exhibitors and our own research, so you can compare hours, ages and costs at the kitchen table. You get the download link right after checkout.</p>
+</div></section>
+<section class="band"><div class="wrap">
+<div class="guides">{cards}
+<div class="guide ink bundle"><div class="guide-b"><span class="pill">Best value</span><h3>All five guides</h3><p>Every 2027 guide as it's released, for one price.</p>
+<div class="guide-f"><span class="opt-p">{BUNDLE_PRICE}</span><a class="btn light" data-link="guide-BUNDLE" href="#">Buy the bundle</a></div></div></div>
+</div>
+<p class="small-note">Guides are free for exhibitors at that fair. Secure checkout by Stripe.</p>
+</div></section>
+</main>
+{footer()}"""
+    return head(f"Resource guides · {SITE}", "Downloadable Westchester guides to summer camps, special needs resources, fall activities, preschools and caring for aging parents.") + "\n" + body + "\n" + tail()
+
+def guide_thanks():
+    body = f"""{nav("guides")}
+<main>
+<section class="hero"><div class="wrap">
+<p class="eyebrow"><span class="live" aria-hidden="true"></span>Payment received</p>
+<h1>Thanks! Your guide is ready.</h1>
+<p class="lede" id="dl-msg">Your download link is below. We also emailed your receipt.</p>
+<div class="cta" id="dl-links"></div>
+<p class="small-note">Trouble downloading? Reply to your receipt email and we'll send it directly.</p>
+</div></section>
+</main>
+{footer()}"""
+    return head(f"Your guide · {SITE}", "Download your Resource Commons guide.").replace('<meta name="description"','<meta name="robots" content="noindex">\n<meta name="description"') + "\n" + body + "\n" + tail()
+
+CONFIG = """// Resource Commons settings. Paste links from Stripe and Kit here.
+// Anything left blank shows as "opening soon" on the site.
+window.RC = {
+  // Kit (newsletter): the number in your Kit form's URL, e.g. app.kit.com/forms/1234567
+  kitFormId: "",
+
+  // Exhibitor application or invoice request form (Tally or Google Forms)
+  exhibit: "",
+
+  // Stripe Payment Links, one per table option. Name each Stripe product with its code first,
+  // e.g. "SOF27 Standard table", so the reconciliation workbook can sort it by fair.
+  pay: {
+    "SOF27-1": "", "SOF27-2": "", "SOF27-3": "",
+    "SNR27-1": "",
+    "FAF27-1": "",
+    "FSP27-1": "", "FSP27-2": "", "FSP27-3": "",
+    "CAP27-1": ""
+  },
+
+  // Stripe Payment Links for guides. In each link's settings, choose
+  // "Don't show confirmation page - redirect to your website" and use
+  // https://resourcecommons.com/guide-thanks.html?g=CODE  (CODE = SOF27, ..., or BUNDLE)
+  guide: { SOF27: "", SNR27: "", FAF27: "", FSP27: "", CAP27: "", BUNDLE: "" },
+
+  // Where each guide PDF lives (e.g. a Google Drive share link). Shown only on the thank-you page.
+  download: { SOF27: "", SNR27: "", FAF27: "", FSP27: "", CAP27: "" }
 };
-'''
-SITEJS = '''(function () {
-  var links = window.RC_LINKS || {};
+"""
+SITEJS = r"""(function () {
+  var C = window.RC || {}, pay = C.pay || {}, guide = C.guide || {}, dl = C.download || {};
+  function lookup(key) {
+    if (key.indexOf("pay-") === 0) return pay[key.slice(4)];
+    if (key.indexOf("guide-") === 0) return guide[key.slice(6)];
+    return C[key];
+  }
   document.querySelectorAll("[data-link]").forEach(function (a) {
-    var key = a.getAttribute("data-link");
-    var url = links[key] || (key.indexOf("exhibit-") === 0 ? links.exhibit : "");
-    if (url) { a.href = url; a.target = "_blank"; a.rel = "noopener"; }
+    var url = lookup(a.getAttribute("data-link"));
+    if (url) { a.href = url; a.rel = "noopener"; }
     else {
       a.removeAttribute("href"); a.setAttribute("aria-disabled", "true");
       a.classList.add("soon"); a.title = "Opening soon";
-      if (!a.classList.contains("small")) a.textContent = a.textContent + " · opening soon";
+      a.textContent = a.textContent + " · opening soon";
     }
   });
+
+  var form = document.getElementById("kit-form");
+  if (form) {
+    var msg = document.getElementById("f-msg"), btn = document.getElementById("f-submit");
+    if (!C.kitFormId) { btn.disabled = true; btn.classList.add("soon"); btn.textContent = "Sign-up opening soon"; }
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      if (!C.kitFormId) return;
+      var email = document.getElementById("f-email");
+      if (!email.value || !email.checkValidity()) { msg.textContent = "Enter a valid email address."; email.focus(); return; }
+      var picks = Array.prototype.map.call(form.querySelectorAll("input[name=interest]:checked"), function (c) { return c.value; });
+      var body = new URLSearchParams();
+      body.append("email_address", email.value);
+      body.append("fields[first_name]", document.getElementById("f-name").value);
+      body.append("fields[interests]", picks.join(", "));
+      btn.disabled = true; msg.textContent = "Signing you up...";
+      fetch("https://app.kit.com/forms/" + C.kitFormId + "/subscriptions", { method: "POST", body: body, headers: { "Accept": "application/json" } })
+        .then(function (r) { if (!r.ok) throw new Error(); form.reset(); msg.textContent = "You're on the list. Check your inbox to confirm."; })
+        .catch(function () { msg.textContent = "That didn't go through. Please try again in a minute."; })
+        .then(function () { btn.disabled = false; });
+    });
+  }
+
+  var box = document.getElementById("dl-links");
+  if (box) {
+    var g = new URLSearchParams(location.search).get("g") || "";
+    var keys = g === "BUNDLE" ? Object.keys(dl) : [g];
+    var names = { SOF27: "Summer Camp Guide", SNR27: "Special Needs Resource Guide", FAF27: "Fall Activities Guide", FSP27: "Preschool & Pre-K Guide", CAP27: "Caring for Aging Parents Guide" };
+    var made = 0;
+    keys.forEach(function (k) {
+      if (!names[k]) return;
+      var a = document.createElement("a"); a.className = "btn";
+      if (dl[k]) { a.href = dl[k]; a.rel = "noopener"; a.textContent = "Download the " + names[k]; }
+      else { a.className = "btn ghost soon"; a.textContent = names[k] + " · we'll email it on release"; }
+      box.appendChild(a); made++;
+    });
+    if (!made) document.getElementById("dl-msg").textContent = "We couldn't find your guide from this link. Check your receipt email, or reply to it and we'll send the guide directly.";
+  }
 })();
-'''
+"""
 
 if __name__ == "__main__":
     for d in ("site","preview"):
         shutil.rmtree(d, ignore_errors=True); os.makedirs(d)
     pages = {"index.html": home(), "exhibit.html": exhibit()}
-    for x in EVENTS: pages[x["slug"]+".html"] = event_page(x)
+    for x in EVENTS:
+        pages[x["slug"]+".html"] = event_page(x)
+        pages["exhibit-"+x["slug"]+".html"] = vendor_page(x)
+    pages["families.html"] = families(); pages["guides.html"] = guides(); pages["guide-thanks.html"] = guide_thanks()
     for name, txt in pages.items():
         open(f"site/{name}","w").write(txt)
         if name != "index.html": open(f"preview/{name}","w").write(txt)
